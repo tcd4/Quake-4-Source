@@ -672,7 +672,7 @@ public:
 	idPlayer *		current_players[ MAX_ASSASSINS ];
 
 	void			AddPlayer( idPlayer * newPlayer );
-	void			RemovePlayer( int * playerNum );
+	void			RemovePlayer( idPlayer * removedPlayer );
 
 private:
 	static const char	*MPGuis[];

@@ -3064,13 +3064,21 @@ void idPlayer::UpdateModelSetup( bool forceReload ) {
 	const char* defaultModel = NULL;
 	const char* newModelName = NULL;
 
-	if( !gameLocal.isMultiplayer || spectating ) {
+	if( !gameLocal.isMultiplayer || spectating ) 
+	{
+		gameLocal.mpGame.RemovePlayer ( this );
 		return;
 	}
 
 	if ( playerNum == -1 )
 	{
 		gameLocal.mpGame.AddPlayer( this );
+
+		if ( playerNum == -1 )
+		{
+			wantSpectate = true;
+			return;
+		}
 	}
 
 	defaultModel = spawnArgs.GetString( "def_default_model" );

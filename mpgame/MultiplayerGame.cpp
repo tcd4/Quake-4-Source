@@ -9303,3 +9303,16 @@ void idMultiplayerGame::AddPlayer ( idPlayer * newPlayer )
 idMultiplayerGame::RemovePlayer
 ================
 */
+
+void idMultiplayerGame::RemovePlayer ( idPlayer * removedPlayer )
+{
+	for ( int i = 0 ; i < MAX_ASSASSINS ; ++i )
+	{
+		if ( current_players [ i ] == removedPlayer )
+		{
+			current_players [ i ] = NULL;
+			removedPlayer->playerNum = -1;
+			return;
+		}
+	}
+}

@@ -70,6 +70,7 @@ const int	POWERUP_BLINK_TIME	= 1000;			// Time between powerup wear off sounds
 const float MIN_BOB_SPEED		= 5.0f;			// minimum speed to bob and play run/walk animations at
 const int	MAX_RESPAWN_TIME	= 10000;
 const int	RAGDOLL_DEATH_TIME	= 3000;
+
 #ifdef _XENON
 	const int	RAGDOLL_DEATH_TIME_XEN_SP	= 1000;
 	const int	MAX_RESPAWN_TIME_XEN_SP	= 3000;
@@ -1349,6 +1350,9 @@ idPlayer::idPlayer() {
 	serverReceiveEvent = false;
 
 	playerNum = -1;
+	target = NULL;
+
+	findTargetTime = 0;
 }
 
 /*
@@ -3072,7 +3076,7 @@ void idPlayer::UpdateModelSetup( bool forceReload ) {
 
 	if ( playerNum == -1 )
 	{
-		gameLocal.mpGame.AddPlayer( this );
+		gameLocal.mpGame.AddPlayer ( this );
 
 		if ( playerNum == -1 )
 		{
@@ -3169,12 +3173,6 @@ void idPlayer::UpdateModelSetup( bool forceReload ) {
 	
 	modelName = newModelName;
 	modelDecl = model;
-
-	gameLocal.Printf ( "%d : ", playerNum);
-	gameLocal.Printf ( newModelName );
-	gameLocal.Printf ( " : " );
-	gameLocal.Printf ( model->GetName () );
-	gameLocal.Printf ( "\n" );
 
 	reloadModel = true;
 
@@ -9699,6 +9697,12 @@ void idPlayer::Think( void ) {
 		inBuyZone = false;
 
 	inBuyZonePrev = false;
+
+	if ( ( target == NULL ) && ( findTargetTime < gameLocal.time ) )
+	{
+		GUIMainNotice ( "Finding a suitible Target" );
+		gameLocal.mpGame.FindTarget ( this );
+	}
 }
 
 /*

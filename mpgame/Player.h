@@ -415,7 +415,9 @@ public:
 
 //assassin player public variables
 	int						playerNum;
+	int						findTargetTime;
 	idStr					characterName;
+	idPlayer *				target;
 
 public:
 	CLASS_PROTOTYPE( idPlayer );
@@ -999,6 +1001,7 @@ private:
 
 	// flags when server is processing entity events, for acknowledge replies
 	bool					serverReceiveEvent;
+
 
 	bool					WantSmoothing( void ) const;
 	void					PredictionErrorDecay( void );

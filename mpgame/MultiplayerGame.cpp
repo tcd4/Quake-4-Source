@@ -8,6 +8,8 @@
 
 #include "Game_local.h"
 
+const int FIND_TARGET_DELAY	= 500;
+
 idCVar g_spectatorChat( "g_spectatorChat", "0", CVAR_GAME | CVAR_ARCHIVE | CVAR_BOOL, "let spectators talk to everyone during game" );
 
 const char *idMultiplayerGame::MPGuis[] = {
@@ -9282,7 +9284,6 @@ void idMultiplayerGame::SetUpdateForTeamPowerups(int team)
 idMultiplayerGame::AddPlayer
 ================
 */
-
 void idMultiplayerGame::AddPlayer ( idPlayer * newPlayer )
 {
 	for ( int i = 0 ; i < MAX_ASSASSINS ; ++i )
@@ -9303,7 +9304,6 @@ void idMultiplayerGame::AddPlayer ( idPlayer * newPlayer )
 idMultiplayerGame::RemovePlayer
 ================
 */
-
 void idMultiplayerGame::RemovePlayer ( idPlayer * removedPlayer )
 {
 	for ( int i = 0 ; i < MAX_ASSASSINS ; ++i )
@@ -9316,3 +9316,29 @@ void idMultiplayerGame::RemovePlayer ( idPlayer * removedPlayer )
 		}
 	}
 }
+
+/*
+================
+idMultiplayerGame::FindTarget
+================
+*/
+void idMultiplayerGame::FindTarget ( idPlayer * player )
+{
+	int i = gameLocal.random.RandomInt ( MAX_ASSASSINS );
+	
+	if ( ( current_players [ i ] == player ) || ( current_players [ i ] == NULL ) )
+	{
+		player->findTargetTime = gameLocal.time + FIND_TARGET_DELAY;
+	}
+	else
+	{
+		player->target = current_players [ i ];
+		player->GUIMainNotice ( "You're Target: " + player->target->characterName, true );
+	}
+}
+
+/*
+================
+idMultiplayerGame::RemoveTarget
+================
+*/

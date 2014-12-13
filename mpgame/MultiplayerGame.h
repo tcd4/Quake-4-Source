@@ -668,11 +668,15 @@ public:
 // RITUAL END
 	static const char*	teamNames[ TEAM_MAX ];
 
-//assassin mpGame public variables
+//assassin mpGame public variables and methods
 	idPlayer *		current_players[ MAX_ASSASSINS ];
+	idPlayer *		targets[ MAX_ASSASSINS ];
 
 	void			AddPlayer( idPlayer * newPlayer );
 	void			RemovePlayer( idPlayer * removedPlayer );
+
+	void			FindTarget( idPlayer * player );
+	void			RemoveTarget( idPlayer * player );
 
 private:
 	static const char	*MPGuis[];

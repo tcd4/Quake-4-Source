@@ -231,6 +231,7 @@ const int CHAT_HISTORY_SIZE = 2048;
 const int RCON_HISTORY_SIZE = 4096;
 
 const int KILL_NOTIFICATION_LEN = 256;
+
 //RAVEN BEGIN
 //asalmon: update stats for Xenon
 #ifdef _XENON
@@ -666,6 +667,12 @@ public:
 	bool			IsBuyingAllowedRightNow( void );
 // RITUAL END
 	static const char*	teamNames[ TEAM_MAX ];
+
+//assassin mpGame public variables
+	idPlayer *		current_players[ MAX_ASSASSINS ];
+
+	void			AddPlayer( idPlayer * newPlayer );
+	void			RemovePlayer( int * playerNum );
 
 private:
 	static const char	*MPGuis[];

@@ -119,6 +119,11 @@ idMultiplayerGame::idMultiplayerGame() {
 	privatePlayers = 0;
 
 	lastAnnouncerSound = AS_NUM_SOUNDS;
+
+	for ( int i = 0 ; i < MAX_ASSASSINS ; i++ )
+	{
+		current_players [ i ] = false;
+	}
 }
 
 /*
@@ -314,7 +319,7 @@ void idMultiplayerGame::SpawnPlayer( int clientNum ) {
 	TIME_THIS_SCOPE( __FUNCLINE__);
 
 	idPlayer *p = static_cast< idPlayer * >( gameLocal.entities[ clientNum ] );
-
+	
 	if ( !p->IsFakeClient() ) {
 		bool ingame = playerState[ clientNum ].ingame;
 		// keep ingame to true if needed, that should only happen for local player
@@ -9272,4 +9277,29 @@ void idMultiplayerGame::SetUpdateForTeamPowerups(int team)
 
 // RITUAL END
 
+/*
+================
+idMultiplayerGame::AddPlayer
+================
+*/
 
+void idMultiplayerGame::AddPlayer ( idPlayer * newPlayer )
+{
+	for ( int i = 0 ; i < MAX_ASSASSINS ; ++i )
+	{
+		if ( current_players [ i ] == NULL )
+		{
+			current_players [ i ] = newPlayer;
+			newPlayer->playerNum = i;
+			return;
+		}
+	}
+
+	newPlayer->playerNum = -1;
+}
+
+/*
+================
+idMultiplayerGame::RemovePlayer
+================
+*/

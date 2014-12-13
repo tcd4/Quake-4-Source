@@ -413,6 +413,10 @@ public:
 
 	float					handicap; // multiplier for damage/health
 
+//assassin player public variables
+	int						playerNum;
+	idStr					characterName;
+
 public:
 	CLASS_PROTOTYPE( idPlayer );
 

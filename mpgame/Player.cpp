@@ -1347,6 +1347,8 @@ idPlayer::idPlayer() {
 	prevOnGround = true;
 	clientIdealWeaponPredictFrame = -1;
 	serverReceiveEvent = false;
+
+	playerNum = -1;
 }
 
 /*
@@ -3066,27 +3068,48 @@ void idPlayer::UpdateModelSetup( bool forceReload ) {
 		return;
 	}
 
-	if( gameLocal.IsTeamGame() ) {
-		defaultModel = spawnArgs.GetString( va( "def_default_model_%s", idMultiplayerGame::teamNames[ team ] ), NULL );
-
-		if( g_forceMarineModel.GetString()[ 0 ] && team == TEAM_MARINE ) {
-			newModelName = g_forceMarineModel.GetString();
-		} else if( g_forceStroggModel.GetString()[ 0 ] && team == TEAM_STROGG ) {
-			newModelName = g_forceStroggModel.GetString();
-		} else {
-			uiKeyName = va( "ui_model_%s", idMultiplayerGame::teamNames[ team ] );
-			newModelName = GetUserInfo() ? GetUserInfo()->GetString( uiKeyName ) : "";
-		}
-	} else {
-		defaultModel = spawnArgs.GetString( "def_default_model" );
-
-		if( g_forceModel.GetString()[ 0 ] ) {
-			newModelName = g_forceModel.GetString();
-		} else {
-			uiKeyName = "ui_model";
-			newModelName = GetUserInfo() ? GetUserInfo()->GetString( uiKeyName ) : "";
-		}	
+	if ( playerNum == -1 )
+	{
+		gameLocal.mpGame.AddPlayer( this );
 	}
+
+	defaultModel = spawnArgs.GetString( "def_default_model" );
+
+	switch ( playerNum )
+	{
+		case 0:
+			newModelName = "model_player_marine_cortez";
+			characterName = "Cortez";
+			break;
+		case 1:
+			newModelName = "model_player_marine_helmeted_bright";
+			characterName = "Pro Marine";
+			break;
+		case 2:
+			newModelName = "model_player_marine_fatigues";
+			characterName = "Bidwell";
+			break;
+		case 3:
+			newModelName = "model_player_tactical_transfer";
+			characterName = "Tactical Transfer";
+			break;
+		case 4:
+			newModelName = "model_player_tactical_command";
+			characterName = "Tactical Command";
+			break;
+		case 5:
+			newModelName = "model_player_failed_transfer";
+			characterName = "Failed Transfer";
+			break;
+		case 6:
+			newModelName = "model_player_corpse";
+			characterName = "Corpse";
+			break;
+		case 7:
+			newModelName = "model_player_tactical_transfer_bright";
+			characterName = "Pro Strogg";
+			break;
+	}	
 
 	if( !idStr::Icmp( newModelName, "" ) ) {
 		newModelName = defaultModel;
@@ -3098,7 +3121,7 @@ void idPlayer::UpdateModelSetup( bool forceReload ) {
 	}
 
 	rvDeclPlayerModel* model = (rvDeclPlayerModel*)declManager->FindType( DECL_PLAYER_MODEL, newModelName, false );
-
+	
 	// validate that the model they've selected is OK for this team game
 	if( gameLocal.IsTeamGame() && model ) {
 		if( idStr::Icmp( model->team, idMultiplayerGame::teamNames[ team ] ) ) {
@@ -3135,9 +3158,15 @@ void idPlayer::UpdateModelSetup( bool forceReload ) {
 
 		}
 	}
-
+	
 	modelName = newModelName;
 	modelDecl = model;
+
+	gameLocal.Printf ( "%d : ", playerNum);
+	gameLocal.Printf ( newModelName );
+	gameLocal.Printf ( " : " );
+	gameLocal.Printf ( model->GetName () );
+	gameLocal.Printf ( "\n" );
 
 	reloadModel = true;
 

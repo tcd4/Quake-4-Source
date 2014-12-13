@@ -70,6 +70,7 @@ class idLocationEntity;
 // bdube: dummy entity for client side physics
 #define ENTITYNUM_CLIENT		(MAX_GENTITIES-3)
 #define	ENTITYNUM_MAX_NORMAL	(MAX_GENTITIES-3)
+#define MAX_ASSASSINS			8
 // RAVEN END
 
 // RAVEN BEGIN

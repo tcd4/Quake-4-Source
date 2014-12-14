@@ -3070,14 +3070,17 @@ void idPlayer::UpdateModelSetup( bool forceReload ) {
 
 	if( !gameLocal.isMultiplayer || spectating ) 
 	{
+		//make sure the player isn't a valid target
 		gameLocal.mpGame.RemovePlayer ( this );
 		return;
 	}
 
+	//check if the player is valid
 	if ( playerNum == -1 )
 	{
 		gameLocal.mpGame.AddPlayer ( this );
 
+		//check if the player is allowed to join the match
 		if ( playerNum == -1 )
 		{
 			wantSpectate = true;
@@ -3087,6 +3090,7 @@ void idPlayer::UpdateModelSetup( bool forceReload ) {
 
 	defaultModel = spawnArgs.GetString( "def_default_model" );
 
+	//give each player a unique model
 	switch ( playerNum )
 	{
 		case 0:
@@ -9698,7 +9702,8 @@ void idPlayer::Think( void ) {
 
 	inBuyZonePrev = false;
 
-	if ( ( target == NULL ) && ( findTargetTime < gameLocal.time ) )
+	//find a target if the player is allowed to
+	if ( ( target == NULL ) && ( findTargetTime < gameLocal.time ) && ( !pfl.dead ) && ( !spectating ) )
 	{
 		GUIMainNotice ( "Finding a suitible Target" );
 		gameLocal.mpGame.FindTarget ( this );

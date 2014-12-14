@@ -1876,6 +1876,8 @@ void idMultiplayerGame::PlayerDeath( idPlayer *dead, idPlayer *killer, int metho
 		}
 	}
 // RAVEN END
+
+	RemoveTarget ( dead );
 }
 
 /*
@@ -9296,6 +9298,7 @@ void idMultiplayerGame::AddPlayer ( idPlayer * newPlayer )
 		}
 	}
 
+	//don't let the player join if the match is full
 	newPlayer->playerNum = -1;
 }
 
@@ -9312,6 +9315,7 @@ void idMultiplayerGame::RemovePlayer ( idPlayer * removedPlayer )
 		{
 			current_players [ i ] = NULL;
 			removedPlayer->playerNum = -1;
+			RemoveTarget ( removedPlayer );
 			return;
 		}
 	}
@@ -9324,9 +9328,11 @@ idMultiplayerGame::FindTarget
 */
 void idMultiplayerGame::FindTarget ( idPlayer * player )
 {
+	//give player a random target
 	int i = gameLocal.random.RandomInt ( MAX_ASSASSINS );
 	
-	if ( ( current_players [ i ] == player ) || ( current_players [ i ] == NULL ) )
+	//make sure the target is valid
+	if ( ( current_players [ i ] == player ) || ( current_players [ i ] == NULL ) || ( current_players [ i ]->pfl.dead ) )
 	{
 		player->findTargetTime = gameLocal.time + FIND_TARGET_DELAY;
 	}
@@ -9334,6 +9340,7 @@ void idMultiplayerGame::FindTarget ( idPlayer * player )
 	{
 		player->target = current_players [ i ];
 		player->GUIMainNotice ( "You're Target: " + player->target->characterName, true );
+		gameLocal.Printf ( player->characterName + " is targeting " + player->target->characterName + ".\n" );
 	}
 }
 
@@ -9342,3 +9349,23 @@ void idMultiplayerGame::FindTarget ( idPlayer * player )
 idMultiplayerGame::RemoveTarget
 ================
 */
+void idMultiplayerGame::RemoveTarget ( idPlayer * player )
+{
+	//reset the player's target
+	player->target = NULL;
+
+	for ( int i = 0 ; i < MAX_ASSASSINS ; ++i )
+	{
+		//make sure the person exists
+		if ( current_players [ i ] == NULL )
+		{
+			continue;
+		}
+		
+		//reset the other's target if it's the player
+		if ( current_players [ i ]->target == player )
+		{
+			current_players [ i ]->target = NULL;
+		}
+	}
+}

@@ -278,6 +278,7 @@ enum {
 	GAME_RELIABLE_MESSAGE_VOICEDATA_CLIENT_TEST,
 	GAME_RELIABLE_MESSAGE_VOICEDATA_CLIENT_ECHO_TEST,
 	GAME_RELIABLE_MESSAGE_GETVOTEMAPS,
+	GAME_RELIABLE_MESSAGE_TARGETS,
 	// unreliable message sent over the reliable channel
 	// used as a debug solution when making sure some missing things are not due to packet drop
 	GAME_RELIABLE_MESSAGE_UNRELIABLE_MESSAGE,

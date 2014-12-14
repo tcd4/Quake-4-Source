@@ -1349,10 +1349,11 @@ idPlayer::idPlayer() {
 	clientIdealWeaponPredictFrame = -1;
 	serverReceiveEvent = false;
 
+	//setup player for assassin
 	playerNum = -1;
 	target = NULL;
-
 	findTargetTime = 0;
+	openKillTime = 0;
 }
 
 /*
@@ -9705,7 +9706,6 @@ void idPlayer::Think( void ) {
 	//find a target if the player is allowed to
 	if ( ( target == NULL ) && ( findTargetTime < gameLocal.time ) && ( !pfl.dead ) && ( !spectating ) )
 	{
-		GUIMainNotice ( "Finding a suitible Target" );
 		gameLocal.mpGame.FindTarget ( this );
 	}
 }

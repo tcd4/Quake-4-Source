@@ -416,6 +416,7 @@ public:
 //assassin player public variables
 	int						playerNum;
 	int						findTargetTime;
+	int						openKillTime;
 	idStr					characterName;
 	idPlayer *				target;
 

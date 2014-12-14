@@ -669,14 +669,17 @@ public:
 	static const char*	teamNames[ TEAM_MAX ];
 
 //assassin mpGame public variables and methods
-	idPlayer *		current_players[ MAX_ASSASSINS ];
-	idPlayer *		targets[ MAX_ASSASSINS ];
+	idPlayer *		current_players [ MAX_ASSASSINS ];
+	idPlayer *		targets [ MAX_ASSASSINS ];
 
-	void			AddPlayer( idPlayer * newPlayer );
-	void			RemovePlayer( idPlayer * removedPlayer );
+	void			AddPlayer ( idPlayer * newPlayer );
+	void			RemovePlayer ( idPlayer * removedPlayer );
 
-	void			FindTarget( idPlayer * player );
-	void			RemoveTarget( idPlayer * player );
+	void			FindTarget ( idPlayer * player );
+	void			RemoveTarget ( idPlayer * player );
+
+	void			SendTargetMessage ( idPlayer* attacker, idPlayer* target );
+	void			ReceiveTargetMessage ( idPlayer* attacker, idPlayer* target );
 
 private:
 	static const char	*MPGuis[];

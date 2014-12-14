@@ -8,7 +8,8 @@
 
 #include "Game_local.h"
 
-const int FIND_TARGET_DELAY	= 500;
+const int FIND_TARGET_DELAY		= 500;
+const int FREE_TO_KILL_DURATION	= 4000;
 
 idCVar g_spectatorChat( "g_spectatorChat", "0", CVAR_GAME | CVAR_ARCHIVE | CVAR_BOOL, "let spectators talk to everyone during game" );
 
@@ -1802,62 +1803,110 @@ void idMultiplayerGame::PlayerDeath( idPlayer *dead, idPlayer *killer, int metho
 
 	if ( killer ) {
 		if ( gameLocal.IsTeamGame() ) {
-			if ( killer == dead || killer->team == dead->team ) {
+			if ( killer == dead || killer->team == dead->team ) 
+			{
 				// suicide or teamkill
 
 				// in flag games, we subtract suicides from team-score rather than player score, which is the true
 				// kill count
-				if( gameLocal.IsFlagGameType() ) {
+				if( gameLocal.IsFlagGameType() ) 
+				{
 					AddPlayerTeamScore( killer == dead ? dead : killer, -1 );
-				} else {
+				} 
+				else 
+				{
 					AddPlayerScore( killer == dead ? dead : killer, -1 );
 				}
 
-			} else {
+			} 
+			else 
+			{
 				// mark a kill
 				AddPlayerScore( killer, 1 );
 			}
 			
 			// additional CTF points
-			if( gameLocal.IsFlagGameType() ) {
-				if( dead->PowerUpActive( killer->team ? POWERUP_CTF_STROGGFLAG : POWERUP_CTF_MARINEFLAG ) ) {
+			if( gameLocal.IsFlagGameType() ) 
+			{
+				if( dead->PowerUpActive( killer->team ? POWERUP_CTF_STROGGFLAG : POWERUP_CTF_MARINEFLAG ) ) 
+				{
 					AddPlayerTeamScore( killer, 2 );
 				}
 			}
-			if( gameLocal.gameType == GAME_TDM ) {
-				if ( killer == dead || killer->team == dead->team ) {
+			if( gameLocal.gameType == GAME_TDM ) 
+			{
+				if ( killer == dead || killer->team == dead->team ) 
+				{
 					// suicide or teamkill
 					AddTeamScore( killer->team, -1 );
-				} else {
+				} 
+				else 
+				{
 					AddTeamScore( killer->team, 1 );
 				}			
 			}
-		} else {
-			// in tourney mode, we don't award points while in the waiting arena
-			if( gameLocal.gameType != GAME_TOURNEY || ((rvTourneyGameState*)gameState)->GetArena( killer->GetArena() ).GetState() != AS_WARMUP ) {
-				AddPlayerScore( killer, ( killer == dead ) ? -1 : 1 );
+		} 
+		else 
+		{
+			//assassin scoring
+			if( gameLocal.gameType != GAME_TOURNEY || ((rvTourneyGameState*)gameState)->GetArena( killer->GetArena() ).GetState() != AS_WARMUP ) 
+			{
+				if ( killer == dead )
+				{
+					//suicide
+					AddPlayerScore( killer, -1 );
+				}
+				else if ( killer == dead->target )
+				{
+					//killer kills their attacker
+					AddPlayerScore( killer, 1 );
+				}
+				else if ( ( killer->target != dead ) && ( dead->openKillTime < gameLocal.time ) )
+				{
+					//killer kills an invalid player
+					AddPlayerScore( killer, -1 );
+				}
+				else
+				{
+					//killer kills their target or someone whose allowed to be killed
+					AddPlayerScore( killer, 1 );
+
+					//minus score for the unstealthy
+					if ( dead->openKillTime >= gameLocal.time )
+					{
+						AddPlayerScore( dead, -1 );
+					}
+				}
 			}
 
 			// in tourney mode, frags track performance over the entire level load, team score keeps track of
 			// individual rounds
-			if( gameLocal.gameType == GAME_TOURNEY ) {
+			if( gameLocal.gameType == GAME_TOURNEY ) 
+			{
 				AddPlayerTeamScore( killer, ( killer == dead ) ? -1 : 1 );
 			}
 		}
-	} else {
+	} 
+	else 
+	{
 		// e.g. an environmental death
 
 		// flag gametypes subtract points from teamscore, not playerscore
-		if( gameLocal.IsFlagGameType() ) {
+		if( gameLocal.IsFlagGameType() ) 
+		{
 			AddPlayerTeamScore( dead, -1 );
-		} else {
+		} 
+		else 
+		{
 			AddPlayerScore( dead, -1 );
 		}
 
-		if( gameLocal.gameType == GAME_TOURNEY ) {
+		if( gameLocal.gameType == GAME_TOURNEY ) 
+		{
 			AddPlayerTeamScore( dead, -1 );
 		}
-		if( gameLocal.gameType == GAME_TDM ) {
+		if( gameLocal.gameType == GAME_TDM ) 
+		{
 			AddTeamScore( dead->team, -1 );
 		}
 	}
@@ -1877,7 +1926,13 @@ void idMultiplayerGame::PlayerDeath( idPlayer *dead, idPlayer *killer, int metho
 	}
 // RAVEN END
 
+	//the dead aren't valid targets
 	RemoveTarget ( dead );
+	//let the killer be killed
+	if ( killer != dead )
+	{
+		killer->openKillTime = gameLocal.time + FREE_TO_KILL_DURATION;
+	}
 }
 
 /*
@@ -6811,6 +6866,8 @@ void idMultiplayerGame::DisconnectClient( int clientNum ) {
 		}
 		statManager->ClientDisconnect( clientNum );
 	}
+	//remove player from assassin
+	RemovePlayer ( static_cast<idPlayer *>( gameLocal.entities[ clientNum ] ) );
 
 	delete gameLocal.entities[ clientNum ];
 
@@ -9313,9 +9370,9 @@ void idMultiplayerGame::RemovePlayer ( idPlayer * removedPlayer )
 	{
 		if ( current_players [ i ] == removedPlayer )
 		{
+			RemoveTarget ( removedPlayer );
 			current_players [ i ] = NULL;
 			removedPlayer->playerNum = -1;
-			RemoveTarget ( removedPlayer );
 			return;
 		}
 	}
@@ -9334,13 +9391,14 @@ void idMultiplayerGame::FindTarget ( idPlayer * player )
 	//make sure the target is valid
 	if ( ( current_players [ i ] == player ) || ( current_players [ i ] == NULL ) || ( current_players [ i ]->pfl.dead ) )
 	{
+		//if target isn't valid, try again after a delay and notify the player
 		player->findTargetTime = gameLocal.time + FIND_TARGET_DELAY;
+		SendTargetMessage ( player, NULL );
 	}
 	else
 	{
 		player->target = current_players [ i ];
-		player->GUIMainNotice ( "You're Target: " + player->target->characterName, true );
-		gameLocal.Printf ( player->characterName + " is targeting " + player->target->characterName + ".\n" );
+		SendTargetMessage ( player, current_players [ i ] );		
 	}
 }
 
@@ -9367,5 +9425,72 @@ void idMultiplayerGame::RemoveTarget ( idPlayer * player )
 		{
 			current_players [ i ]->target = NULL;
 		}
+	}
+}
+
+/*
+================
+idMultiplayerGame::SendTargetMessage
+================
+*/
+void idMultiplayerGame::SendTargetMessage ( idPlayer* attacker, idPlayer* target )
+{
+	//a bunch of bullshit I don't really understand but still somehow got working
+	if ( !gameLocal.isClient ) 
+	{
+		idBitMsg outMsg;
+		byte msgBuf[1024];
+
+		outMsg.Init( msgBuf, sizeof( msgBuf ) );
+		outMsg.WriteByte( GAME_RELIABLE_MESSAGE_TARGETS );
+
+		if ( attacker ) 
+		{
+			outMsg.WriteByte( attacker->entityNumber );
+		} 
+		else 
+		{
+			outMsg.WriteByte( 255 );
+		}
+		
+		if ( target ) 
+		{
+			outMsg.WriteByte( target->entityNumber );
+		} 
+		else 
+		{
+			outMsg.WriteByte( 255 );
+		}
+		
+		gameLocal.ServerSendInstanceReliableMessage( attacker, -1, outMsg );	
+
+		if ( gameLocal.isListenServer && gameLocal.GetLocalPlayer() && attacker && gameLocal.GetLocalPlayer()->GetInstance() == attacker->GetInstance() )
+		{
+			// This is for listen servers, which won't get to ClientProcessReliableMessage
+			ReceiveTargetMessage( attacker, target );
+		}
+	}
+}
+
+/*
+================
+idMultiplayerGame::ReceiveTargetMessage
+================
+*/
+void idMultiplayerGame::ReceiveTargetMessage ( idPlayer* attacker, idPlayer* target )
+{
+	//only the attacker should know who they're attacking
+	if ( gameLocal.GetLocalPlayer() != attacker )
+	{
+		return;
+	}
+
+	if ( target )
+	{
+		( gameLocal.GetLocalPlayer() )->GUIMainNotice ( "You're Target: " + target->characterName, true );
+	}
+	else
+	{
+		( gameLocal.GetLocalPlayer() )->GUIMainNotice ( "Finding a suitible target." );
 	}
 }

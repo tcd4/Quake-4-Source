@@ -2378,6 +2378,17 @@ void idGameLocal::ClientProcessReliableMessage( int clientNum, const idBitMsg &m
 			}
 			break;
 		}
+		case GAME_RELIABLE_MESSAGE_TARGETS: 
+		{
+			int attackerEntityNumber = msg.ReadByte();
+			int targetEntityNumber = msg.ReadByte();
+
+			idPlayer* attacker = ( attackerEntityNumber != 255 ? static_cast<idPlayer*>( gameLocal.entities[ attackerEntityNumber ] ) : NULL );
+			idPlayer* target = ( targetEntityNumber != 255 ? static_cast<idPlayer*>( gameLocal.entities[ targetEntityNumber ] ) : NULL );
+			
+			mpGame.ReceiveTargetMessage( attacker, target );
+			break;
+		}
 		default: {
 			Error( "Unknown server->client reliable message: %d", id );
 			break;

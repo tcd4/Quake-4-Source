@@ -1865,6 +1865,8 @@ void idMultiplayerGame::PlayerDeath( idPlayer *dead, idPlayer *killer, int metho
 				{
 					//killer kills an invalid player
 					AddPlayerScore( killer, -1 );
+					killer->target = NULL;
+					killer->findTargetTime = gameLocal.time + 4 * FIND_TARGET_DELAY;
 				}
 				else
 				{

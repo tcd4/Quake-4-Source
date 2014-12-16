@@ -18,3 +18,5 @@ Quake 4 Source Modifications Assassin Branch
 		-after an assassination, the killer becomes vulnerable for a short duration
 			-killing a vulnerable player will increase the killer's score
 			-players killed while vulnerable will decrease the player's score
+			
+-don't have warmup on
